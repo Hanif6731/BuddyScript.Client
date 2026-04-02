@@ -1,0 +1,140 @@
+/* Component Specific Styles for Register */
+
+._password_rules {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 8px 10px;
+    background: var(--bg2, #f8f9fa);
+    border: 1px solid var(--bcolor1, #e0e0e0);
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+._password_rule {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    transition: color 0.2s;
+}
+
+._password_rule_icon {
+    font-size: 11px;
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+._password_rule_met {
+    color: #16a34a;
+}
+
+._password_rule_unmet {
+    color: #9ca3af;
+}
+
+._social_registration_content_btn {
+    border: 1px solid var(--bcolor1);
+    background: var(--bg2);
+    border-radius: 6px;
+    padding: 12px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+._social_registration_content_btn:hover {
+    background: var(--bg3);
+}
+
+._social_registration_content_btn span {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--color2);
+}
+
+._google_img {
+    max-width: 20px;
+    margin: 0 8px 0 0;
+}
+
+._social_registration_content_bottom_txt {
+    text-align: center;
+    position: relative;
+    width: 100%;
+}
+
+._social_registration_content_bottom_txt::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 108px;
+    height: 2px;
+    border: 1px solid var(--bg4);
+    border-radius: 6px;
+    bottom: 11px;
+}
+
+._social_registration_content_bottom_txt::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 108px;
+    height: 2px;
+    border: 1px solid var(--bg4);
+    border-radius: 6px;
+    bottom: 11px;
+}
+
+._social_registration_content_bottom_txt span {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--color3);
+}._social_registration_form_btn_link {
+    white-space: nowrap;
+    padding: 10px 40px;
+    width: 100%;
+    display: block;
+    text-align: center;
+}
+
+._social_registration_form_check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+._social_registration_form_check_input {
+    margin-top: 0;
+    width: 18px;
+    height: 18px;
+    appearance: none;
+    background-color: #fff;
+    border: 2px solid var(--bcolor1);
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+._social_registration_form_check_input:checked {
+    background-color: var(--bcolor1);
+    border-color: var(--bcolor1);
+}
+
+._social_registration_form_check_input:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    background-color: #fff;
+    border-radius: 50%;
+}

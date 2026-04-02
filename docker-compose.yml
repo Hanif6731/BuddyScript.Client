@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "38291:8291"
+    networks:
+      - buddynet
+
+networks:
+  buddynet:
+    external: true

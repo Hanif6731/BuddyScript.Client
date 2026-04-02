@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-ssr/
+.env
+.env.local
+.env.production
+.eslintcache
+.DS_Store
+npm-debug.log*
+.vs
