@@ -3,28 +3,36 @@ name: Deploy Frontend
 on:
   push:
     branches: [ "master", "main" ]
-  pull_request:
-    branches: [ "master", "main" ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    
-    # Securely bake in GitHub Secrets as compile-time variables 
-    # Ensure you've setup PROD_API_URL under Repository -> Settings -> Secrets
-    - name: Build and Inject Environment Docker Image
-      run: |
-        # Write compile-time secrets to local .env so Dockerfile 'COPY . .' ingests them
-        cat <<EOF > .env.production
-        VITE_API_BASE_URL=${{ secrets.API_BASE_URL }}
-        VITE_GOOGLE_CLIENT_ID=${{ secrets.PROD_GOOGLE_CLIENT_ID }}
-        EOF
-        
-        # Build natively without explicit Dockerfile arguments
-        docker build -t buddyscript-client:latest .
-        
-        # Destroy the artifact securely
-        rm .env.production
+    runs-on: node-primary
+    environment: production
 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Write build-time environment variables
+        shell: pwsh
+        run: |
+          $lines = @(
+            "VITE_API_BASE_URL=${{ secrets.API_BASE_URL }}",
+            "VITE_GOOGLE_CLIENT_ID=${{ secrets.PROD_GOOGLE_CLIENT_ID }}"
+          )
+          $lines | Set-Content -Path .env.production -Encoding UTF8
+
+      - name: Deploy with Docker Compose
+        shell: pwsh
+        run: |
+          docker compose down
+          docker compose up -d --build
+          docker image prune -f
+
+      - name: Clean up .env.production
+        if: always()
+        shell: pwsh
+        run: Remove-Item -Path .env.production -Force -ErrorAction SilentlyContinue
