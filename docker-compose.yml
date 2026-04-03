@@ -1,5 +1,6 @@
 services:
-  frontend:
+  buddyscript-ui:
+    container_name: buddyscript-ui
     build:
       context: .
       dockerfile: Dockerfile
