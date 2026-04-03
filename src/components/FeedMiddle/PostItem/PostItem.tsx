@@ -43,8 +43,6 @@ const PostItem: React.FC<PostItemProps> = ({ post, currentUserId, onLikeToggle }
     const likeButtonRef = useRef<HTMLDivElement>(null);
     const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null);
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
-
     const openPicker = () => {
         if (reactionHoverTimer.current) clearTimeout(reactionHoverTimer.current);
         if (likeButtonRef.current) {
@@ -75,9 +73,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, currentUserId, onLikeToggle }
         }
     };
 
-    const imageUrl = post.imageUrl
-        ? (post.imageUrl.startsWith('http') ? post.imageUrl : `${baseUrl}${post.imageUrl}`)
-        : null;
+    const imageUrl = post.imageUrl ?? null;
 
     return (
         <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24 _mar_b16">

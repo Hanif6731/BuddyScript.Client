@@ -72,5 +72,5 @@ export const getLikers = async (entityId: number, entityType: number): Promise<L
 };
 
 export const getBaseUrl = (): string => {
-    return api.defaults.baseURL?.replace('/api', '') || 'http://localhost:5000';
+    return '';
 };
