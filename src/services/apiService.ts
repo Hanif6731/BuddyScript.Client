@@ -61,9 +61,9 @@ export const getReplies = async (commentId: number): Promise<CommentType[]> => {
     return res.data;
 };
 
-export const toggleLike = async (entityId: number, entityType: number): Promise<boolean> => {
-    const res = await api.post('/Interactions/like', { entityId, entityType });
-    return res.data.liked;
+export const toggleLike = async (entityId: number, entityType: number, reactionType = 'Like'): Promise<string | null> => {
+    const res = await api.post('/Interactions/like', { entityId, entityType, reactionType });
+    return res.data.reaction as string | null;
 };
 
 export const getLikers = async (entityId: number, entityType: number): Promise<LikerType[]> => {

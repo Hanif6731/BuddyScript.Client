@@ -15,6 +15,7 @@ export interface PostType {
     userFullName: string;
     likeCount: number;
     isLikedByMe: boolean;
+    myReaction: string | null;
     commentCount: number;
 }
 
@@ -28,6 +29,7 @@ export interface CommentType {
     parentCommentId: number | null;
     likeCount: number;
     isLikedByMe: boolean;
+    myReaction: string | null;
     replyCount: number;
     replies: CommentType[];
 }

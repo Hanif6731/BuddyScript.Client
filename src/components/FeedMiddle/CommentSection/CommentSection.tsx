@@ -46,7 +46,7 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
     const [repliesExpanded, setRepliesExpanded] = useState(false);
     const [repliesLoading, setRepliesLoading] = useState(false);
     const [selectedReaction, setSelectedReaction] = useState<typeof REACTIONS[0] | null>(
-        comment.isLikedByMe ? REACTIONS[0] : null
+        comment.isLikedByMe ? (REACTIONS.find(r => r.label === comment.myReaction) ?? REACTIONS[0]) : null
     );
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const reactionHoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,21 +69,31 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
 
     const handleReactionPick = async (reaction: typeof REACTIONS[0]) => {
         setShowReactionPicker(false);
-        const wasLiked = localComment.isLikedByMe && selectedReaction?.label === reaction.label;
-        const prev = localComment.isLikedByMe;
+        const isSameReaction = localComment.isLikedByMe && selectedReaction?.label === reaction.label;
+        const prevLiked = localComment.isLikedByMe;
+        const prevReaction = selectedReaction;
         const prevCount = localComment.likeCount;
-        const newLiked = !wasLiked;
-        setLocalComment(c => ({
-            ...c,
-            isLikedByMe: newLiked,
-            likeCount: wasLiked ? prevCount - 1 : prev ? prevCount : prevCount + 1,
-        }));
-        setSelectedReaction(newLiked ? reaction : null);
+
+        if (isSameReaction) {
+            setLocalComment(c => ({ ...c, isLikedByMe: false, likeCount: prevCount - 1 }));
+            setSelectedReaction(null);
+        } else {
+            setLocalComment(c => ({ ...c, isLikedByMe: true, likeCount: prevLiked ? prevCount : prevCount + 1 }));
+            setSelectedReaction(reaction);
+        }
+
         try {
-            await toggleLike(localComment.id, 1);
+            const resultReaction = await toggleLike(localComment.id, 1, reaction.label);
+            const nowLiked = resultReaction !== null;
+            setLocalComment(c => ({
+                ...c,
+                isLikedByMe: nowLiked,
+                likeCount: nowLiked ? (prevLiked ? prevCount : prevCount + 1) : prevCount - 1,
+            }));
+            setSelectedReaction(nowLiked ? (REACTIONS.find(r => r.label === resultReaction) ?? reaction) : null);
         } catch {
-            setLocalComment(c => ({ ...c, isLikedByMe: prev, likeCount: prevCount }));
-            setSelectedReaction(prev ? selectedReaction : null);
+            setLocalComment(c => ({ ...c, isLikedByMe: prevLiked, likeCount: prevCount }));
+            setSelectedReaction(prevReaction);
         }
     };
 

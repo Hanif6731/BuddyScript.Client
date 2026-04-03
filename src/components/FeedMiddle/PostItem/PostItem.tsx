@@ -35,7 +35,9 @@ const PostItem: React.FC<PostItemProps> = ({ post, currentUserId, onLikeToggle }
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isLiked, setIsLiked] = useState(post.isLikedByMe);
     const [likeCount, setLikeCount] = useState(post.likeCount);
-    const [selectedReaction, setSelectedReaction] = useState<typeof REACTIONS[0] | null>(null);
+    const [selectedReaction, setSelectedReaction] = useState<typeof REACTIONS[0] | null>(
+        post.isLikedByMe ? (REACTIONS.find(r => r.label === post.myReaction) ?? REACTIONS[0]) : null
+    );
     const [showReactionPicker, setShowReactionPicker] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [likersModal, setLikersModal] = useState(false);
@@ -56,19 +58,31 @@ const PostItem: React.FC<PostItemProps> = ({ post, currentUserId, onLikeToggle }
     };
     const handleReactionPick = async (reaction: typeof REACTIONS[0]) => {
         setShowReactionPicker(false);
-        const wasLiked = isLiked && selectedReaction?.label === reaction.label;
-        const prev = isLiked;
+        const isSameReaction = isLiked && selectedReaction?.label === reaction.label;
+        const prevIsLiked = isLiked;
+        const prevReaction = selectedReaction;
         const prevCount = likeCount;
-        setIsLiked(!wasLiked);
-        setSelectedReaction(wasLiked ? null : reaction);
-        setLikeCount(wasLiked ? prevCount - 1 : prev ? prevCount : prevCount + 1);
+
+        // Optimistic update
+        if (isSameReaction) {
+            setIsLiked(false);
+            setSelectedReaction(null);
+            setLikeCount(prevCount - 1);
+        } else {
+            setIsLiked(true);
+            setSelectedReaction(reaction);
+            setLikeCount(prevIsLiked ? prevCount : prevCount + 1);
+        }
+
         try {
-            const result = await toggleLike(post.id, 0);
-            setIsLiked(result);
-            if (!result) setSelectedReaction(null);
-            onLikeToggle?.(post.id, result, result ? prevCount + 1 : prevCount - 1);
+            const resultReaction = await toggleLike(post.id, 0, reaction.label);
+            const nowLiked = resultReaction !== null;
+            setIsLiked(nowLiked);
+            setSelectedReaction(nowLiked ? (REACTIONS.find(r => r.label === resultReaction) ?? reaction) : null);
+            onLikeToggle?.(post.id, nowLiked, nowLiked ? (prevIsLiked ? prevCount : prevCount + 1) : prevCount - 1);
         } catch {
-            setIsLiked(prev);
+            setIsLiked(prevIsLiked);
+            setSelectedReaction(prevReaction);
             setLikeCount(prevCount);
         }
     };
