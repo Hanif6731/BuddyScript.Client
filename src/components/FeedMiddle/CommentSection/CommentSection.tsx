@@ -20,7 +20,7 @@ interface CommentSectionProps {
 import { getInitials, getAvatarColor } from '../../../utils/avatar';
 
 function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = Date.now() - new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z').getTime();
     const m = Math.floor(diff / 60000);
     if (m < 1) return 'just now';
     if (m < 60) return `${m}m`;
