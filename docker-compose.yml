@@ -9,6 +9,11 @@ services:
       - "38291:8291"
     networks:
       - buddynet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 128M
 
 networks:
   buddynet:
