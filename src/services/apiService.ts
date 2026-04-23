@@ -51,13 +51,13 @@ export const createComment = async (postId: number, content: string, parentComme
     return res.data;
 };
 
-export const getComments = async (postId: number): Promise<CommentType[]> => {
-    const res = await api.get(`/Interactions/comments/${postId}`);
+export const getComments = async (postId: number, page: number = 1, pageSize: number = 10): Promise<CommentType[]> => {
+    const res = await api.get(`/Interactions/comments/${postId}`, { params: { page, pageSize } });
     return res.data;
 };
 
-export const getReplies = async (commentId: number): Promise<CommentType[]> => {
-    const res = await api.get(`/Interactions/replies/${commentId}`);
+export const getReplies = async (commentId: number, page: number = 1, pageSize: number = 10): Promise<CommentType[]> => {
+    const res = await api.get(`/Interactions/replies/${commentId}`, { params: { page, pageSize } });
     return res.data;
 };
 

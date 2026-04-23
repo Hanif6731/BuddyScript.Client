@@ -15,6 +15,6 @@ export const handleLoginAction = async (
         });
         setUser(user);
     } catch (err: any) {
-        dispatch({ type: 'SET_ERROR', payload: err.response?.data || 'Login failed' });
+        dispatch({ type: 'SET_ERROR', payload: err.response?.data?.message || err.response?.data || 'Login failed' });
     }
 };

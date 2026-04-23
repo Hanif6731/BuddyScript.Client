@@ -15,6 +15,6 @@ export const handleRegisterAction = async (
         });
         navigate('/login');
     } catch (err: any) {
-        dispatch({ type: 'SET_ERROR', payload: err.response?.data || 'Registration failed' });
+        dispatch({ type: 'SET_ERROR', payload: err.response?.data?.message || err.response?.data || 'Registration failed' });
     }
 };

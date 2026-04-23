@@ -97,11 +97,18 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
         }
     };
 
-    const loadReplies = async () => {
+    const [repliesPage, setRepliesPage] = useState(1);
+    const [hasMoreReplies, setHasMoreReplies] = useState(localComment.replyCount > 0);
+
+    const loadReplies = async (pageNum: number = 1) => {
         setRepliesLoading(true);
         try {
-            const replies = await getReplies(localComment.id);
-            setLoadedReplies(replies);
+            const replies = await getReplies(localComment.id, pageNum, 5);
+            if (replies.length < 5) setHasMoreReplies(false);
+            else setHasMoreReplies(true);
+            
+            setLoadedReplies(prev => pageNum === 1 ? replies.reverse() : [...replies.reverse(), ...prev]);
+            setRepliesPage(pageNum);
             setRepliesExpanded(true);
         } catch (err) {
             console.error('Failed to load replies', err);
@@ -115,9 +122,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
         setSubmitting(true);
         try {
             await createComment(postId, replyText.trim(), localComment.id);
-            const replies = await getReplies(localComment.id);
-            setLoadedReplies(replies);
-            setLocalComment(c => ({ ...c, replyCount: replies.length }));
+            // Refresh replies from page 1 to see the new reply
+            await loadReplies(1);
+            setLocalComment(c => ({ ...c, replyCount: c.replyCount + 1 }));
             setRepliesExpanded(true);
             setReplyText('');
             setShowReply(false);
@@ -306,22 +313,32 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
             </div>
 
             {localComment.replyCount > 0 && !repliesExpanded && (
-                <div style={{ marginLeft: 60, marginTop: 4, marginBottom: 4 }}>
+                <div className="_previous_comment" style={{ marginLeft: indent + 36 }}>
                     <button
                         type="button"
                         className="_previous_comment_txt"
-                        onClick={loadReplies}
+                        onClick={() => loadReplies(1)}
                         disabled={repliesLoading}
                     >
-                        {repliesLoading
-                            ? 'Loading...'
-                            : `View ${localComment.replyCount} repl${localComment.replyCount === 1 ? 'y' : 'ies'}`}
+                        {repliesLoading ? 'Loading...' : `View ${localComment.replyCount} repl${localComment.replyCount === 1 ? 'y' : 'ies'}`}
                     </button>
                 </div>
             )}
 
             {repliesExpanded && loadedReplies.length > 0 && (
-                <div>
+                <div className="_replies_container">
+                    {hasMoreReplies && (
+                        <div className="_previous_comment" style={{ marginLeft: indent + 36 }}>
+                            <button
+                                type="button"
+                                className="_previous_comment_txt"
+                                onClick={() => loadReplies(repliesPage + 1)}
+                                disabled={repliesLoading}
+                            >
+                                {repliesLoading ? 'Loading...' : 'View previous replies'}
+                            </button>
+                        </div>
+                    )}
                     {loadedReplies.map(reply => (
                         <CommentItem
                             key={reply.id}
@@ -337,20 +354,23 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, currentUserId, postI
     );
 };
 
-const INITIAL_VISIBLE = 4;
-
 const CommentSection: React.FC<CommentSectionProps> = ({ postId, currentUserId }) => {
     const [comments, setComments] = useState<CommentType[]>([]);
     const [loading, setLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [visibleFrom, setVisibleFrom] = useState(INITIAL_VISIBLE);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const loadComments = async () => {
+    const loadComments = async (pageNum: number = 1) => {
         try {
-            const data = await getComments(postId);
-            setComments(data);
+            const data = await getComments(postId, pageNum, 10);
+            if (data.length < 10) setHasMore(false);
+            else setHasMore(true);
+            
+            setComments(prev => pageNum === 1 ? data.reverse() : [...data.reverse(), ...prev]);
+            setPage(pageNum);
         } catch {
             setComments([]);
         } finally {
@@ -358,7 +378,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, currentUserId }
         }
     };
 
-    useEffect(() => { loadComments(); }, [postId]);
+    useEffect(() => { loadComments(1); }, [postId]);
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -367,7 +387,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, currentUserId }
         try {
             await createComment(postId, newComment.trim());
             setNewComment('');
-            await loadComments();
+            // Reload page 1 to see the new comment
+            await loadComments(1);
         } catch (err) {
             console.error('Failed to post comment', err);
         } finally {
@@ -424,18 +445,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, currentUserId }
                     <p style={{ textAlign: 'center', color: '#999', padding: '8px 0', fontSize: 13 }}>No comments yet. Be the first!</p>
                 ) : (
                     <>
-                        {comments.length > visibleFrom && (
+                        {hasMore && (
                             <div className="_previous_comment">
                                 <button
                                     type="button"
                                     className="_previous_comment_txt"
-                                    onClick={() => setVisibleFrom(v => Math.min(v + INITIAL_VISIBLE, comments.length))}
+                                    onClick={() => loadComments(page + 1)}
                                 >
-                                    View {Math.min(comments.length - visibleFrom, INITIAL_VISIBLE)} previous comment{comments.length - visibleFrom !== 1 ? 's' : ''}
+                                    View previous comments
                                 </button>
                             </div>
                         )}
-                        {comments.slice(-visibleFrom).map(comment => (
+                        {comments.map(comment => (
                             <CommentItem
                                 key={comment.id}
                                 comment={comment}
